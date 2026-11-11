@@ -218,3 +218,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Arquivos de ambiente e configurações locais
+.env.*
+!.env.example
+
+# Configurações de editores e sistema operacional
+.idea/
+.vscode/
+.DS_Store
