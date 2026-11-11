@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-8">
+  <h1 class="h3 mb-3">Cadastrar solicitação</h1>
+  <div class="card card-body">
+    <form method="post">{% csrf_token %}
+      {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+      <div class="mb-3"><label class="form-label" for="{{ form.descricao.id_for_label }}">Descrição</label>{{ form.descricao }}{% for error in form.descricao.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>
+      <div class="mb-3"><label class="form-label" for="{{ form.categoria.id_for_label }}">Categoria</label>{{ form.categoria }}{% for error in form.categoria.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>
+      <button class="btn btn-primary" type="submit">Salvar solicitação</button>
+      <a class="btn btn-outline-secondary" href="{% url 'solicitacoes:listar' %}">Cancelar</a>
+    </form>
+  </div>
+</div></div>
+<script>
+document.querySelectorAll("textarea, select").forEach((el) => el.classList.add("form-control"));
+</script>
+{% endblock %}
