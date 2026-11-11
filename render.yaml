@@ -3,7 +3,7 @@ services:
     name: gestao-comunitaria-acbe
     runtime: python
     plan: free
-    buildCommand: ./build.sh
+    buildCommand: bash build.sh
     startCommand: gunicorn config.wsgi:application
     healthCheckPath: /login/
     envVars:
@@ -11,10 +11,6 @@ services:
         generateValue: true
       - key: DJANGO_DEBUG
         value: "0"
-      - key: DJANGO_ALLOWED_HOSTS
-        value: gestao-comunitaria-acbe.onrender.com
-      - key: DJANGO_CSRF_TRUSTED_ORIGINS
-        value: https://gestao-comunitaria-acbe.onrender.com
       - key: DATABASE_URL
         fromDatabase:
           name: gestao-comunitaria-acbe-db
@@ -23,3 +19,5 @@ services:
 databases:
   - name: gestao-comunitaria-acbe-db
     plan: free
+    databaseName: gestao_comunitaria_acbe
+    user: gestao_comunitaria_acbe
