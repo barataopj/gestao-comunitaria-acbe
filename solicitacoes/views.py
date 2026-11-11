@@ -49,11 +49,14 @@ def criar(request):
 @login_required
 def atualizar_status(request, pk):
     solicitacao = get_object_or_404(Solicitacao, pk=pk)
+    # O ModelForm atualiza a instância durante is_valid(); por isso,
+    # guardamos o status original antes de validar os dados enviados.
+    status_anterior = solicitacao.status
     if request.method == "POST":
         form = AtualizarStatusForm(request.POST, instance=solicitacao)
         if form.is_valid():
             novo_status = form.cleaned_data["status"]
-            if novo_status != solicitacao.status:
+            if novo_status != status_anterior:
                 with transaction.atomic():
                     solicitacao.status = novo_status
                     solicitacao.save(update_fields=["status"])
