@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div><h1 class="h3 mb-1">Solicitações comunitárias</h1><p class="text-muted mb-0">Consulte e acompanhe os registros.</p></div>
+  <a class="btn btn-primary" href="{% url 'solicitacoes:criar' %}">Nova solicitação</a>
+</div>
+<form method="get" class="card card-body mb-3"><div class="row g-2 align-items-end">
+  <div class="col-md-4"><label class="form-label" for="categoria">Categoria</label><select class="form-select" id="categoria" name="categoria"><option value="">Todas</option>{% for valor, rotulo in categoria_choices %}<option value="{{ valor }}" {% if categoria_selecionada == valor %}selected{% endif %}>{{ rotulo }}</option>{% endfor %}</select></div>
+  <div class="col-md-4"><label class="form-label" for="status">Status</label><select class="form-select" id="status" name="status"><option value="">Todos</option>{% for valor, rotulo in status_choices %}<option value="{{ valor }}" {% if status_selecionado == valor %}selected{% endif %}>{{ rotulo }}</option>{% endfor %}</select></div>
+  <div class="col-md-2"><button class="btn btn-outline-primary w-100" type="submit">Filtrar</button></div>
+  <div class="col-md-2"><a class="btn btn-outline-secondary w-100" href="{% url 'solicitacoes:listar' %}">Limpar</a></div>
+</div></form>
+<div class="table-responsive card"><table class="table table-hover mb-0">
+  <thead><tr><th>Protocolo</th><th>Descrição</th><th>Categoria</th><th>Status</th><th>Registro</th><th>Ação</th></tr></thead>
+  <tbody>{% for item in solicitacoes %}<tr>
+    <td>{{ item.protocolo }}</td><td>{{ item.descricao }}</td><td>{{ item.get_categoria_display }}</td><td>{{ item.get_status_display }}</td><td>{{ item.criada_em|date:"d/m/Y H:i" }}</td>
+    <td><a class="btn btn-sm btn-outline-primary" href="{% url 'solicitacoes:atualizar_status' item.pk %}">Atualizar</a></td>
+  </tr>{% empty %}<tr><td colspan="6" class="text-center py-4">Nenhuma solicitação encontrada.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}
