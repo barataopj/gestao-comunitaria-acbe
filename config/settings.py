@@ -2,10 +2,29 @@
 import os
 from pathlib import Path
 
+import dj_database_url
+
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "django-insecure-chave-apenas-para-desenvolvimento-local")
+
+SECRET_KEY = os.environ.get(
+    "DJANGO_SECRET_KEY",
+    "django-insecure-chave-apenas-para-desenvolvimento-local",
+)
 DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,testserver").split(",")
+
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get(
+        "DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,testserver"
+    ).split(",")
+    if host.strip()
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origin.strip()
+]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -16,8 +35,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "solicitacoes",
 ]
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -25,6 +46,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
 ROOT_URLCONF = "config.urls"
 TEMPLATES = [{
     "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -39,9 +61,16 @@ TEMPLATES = [{
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
-# SQLite facilita a execução local e dos testes. PostgreSQL é selecionado
-# quando as variáveis de ambiente correspondentes são informadas.
-if os.environ.get("DB_NAME"):
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=not DEBUG,
+        )
+    }
+elif os.environ.get("DB_NAME"):
     DATABASES = {"default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": os.environ["DB_NAME"],
@@ -51,7 +80,10 @@ if os.environ.get("DB_NAME"):
         "PORT": os.environ.get("DB_PORT", "5432"),
     }}
 else:
-    DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}}
+    DATABASES = {"default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }}
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -59,12 +91,30 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
+
 LANGUAGE_CODE = "pt-br"
 TIME_ZONE = "America/Sao_Paulo"
 USE_I18N = True
 USE_TZ = True
-STATIC_URL = "static/"
+
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    },
+}
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "solicitacoes:listar"
 LOGOUT_REDIRECT_URL = "login"
+
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = "DENY"
